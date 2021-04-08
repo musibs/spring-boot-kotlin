@@ -2,12 +2,17 @@ package com.example.demo
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import org.springframework.context.support.beans
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
+import org.springframework.security.core.userdetails.User
+import org.springframework.security.provisioning.InMemoryUserDetailsManager
 import org.springframework.stereotype.Repository
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.servlet.function.ServerResponse
+import org.springframework.web.servlet.function.router
 import javax.persistence.Entity
 import javax.persistence.Id
 import javax.persistence.Table
@@ -16,7 +21,24 @@ import javax.persistence.Table
 class DemoApplication
 
 fun main(args: Array<String>) {
-    runApplication<DemoApplication>(*args)
+    runApplication<DemoApplication>(*args) {
+        addInitializers(beans {
+            bean {
+                fun user(user: String, password: String, vararg roles: String)
+                        = User.withDefaultPasswordEncoder().username(user).password(password).roles(*roles).build()
+                InMemoryUserDetailsManager(user("user", "password", "USER"),
+                        user("admin", "password", "ADMIN"))
+            }
+
+            bean {
+                router {
+                    GET("/greetings") {
+                        request -> request.principal().map { it.name }.map { ServerResponse.ok().body(mapOf("greeting" to "Hello $it")) }.orElseGet { ServerResponse.badRequest().build() }
+                    }
+                }
+            }
+        })
+    }
 }
 
 @Entity
