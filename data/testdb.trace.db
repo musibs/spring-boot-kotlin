@@ -1,0 +1,3 @@
+2021-04-08 22:43:01 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "COURSES" not found; SQL statement:
+select course0_.id as id1_0_, course0_.category as category2_0_, course0_.description as descript3_0_, course0_.name as name4_0_, course0_.rating as rating5_0_ from courses course0_ [42102-200]
